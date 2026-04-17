@@ -1,4 +1,36 @@
 <?php
+
+function getAuthorizationHeader(){
+    $headers = null;
+    
+    // Cek jalur standar Nginx / FastCGI
+    if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+        $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+    } 
+    // Cek jalur alternatif
+    elseif (isset($_SERVER['Authorization'])) {
+        $headers = trim($_SERVER["Authorization"]);
+    } 
+    // Cek jalur Apache (jaga-jaga jika dipakai di Laragon lokal)
+    elseif (function_exists('apache_request_headers')) {
+        $requestHeaders = apache_request_headers();
+        $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
+        if (isset($requestHeaders['Authorization'])) {
+            $headers = trim($requestHeaders['Authorization']);
+        }
+    }
+    return $headers;
+}
+
+// Cara menggunakannya untuk mengambil token:
+$authHeader = getAuthorizationHeader();
+
+if (empty($authHeader) || !preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
+    echo json_encode(["status" => "error", "message" => "Akses Ditolak! Token Bearer tidak ditemukan."]);
+    exit;
+}
+
+$jwt_token_yang_diterima = $matches[1];
 // Mengatur header agar response dibaca sebagai JSON
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *'); // Mengizinkan Siga-8 untuk request (CORS)
