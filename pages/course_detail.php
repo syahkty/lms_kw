@@ -31,9 +31,10 @@ function konversiNilai($nilaiAngka) {
 $nama_mk = "Detail Mata Kuliah"; 
 
 if ($role === 'dosen') {
-    $siga_data_url = "http://192.168.1.9/Siga-8%20kw/api_get_dosen_mk.php";
+    // Sesuaikan URL jika API dosenmu butuh parameter, misal: ?nip=...
+    $siga_data_url = "https://siga-8.syahkty.dev/api/api_get_dosen_mk.php"; 
 } else {
-    $siga_data_url = "http://192.168.1.9/Siga-8%20kw/api_get_krs.php?nim=" . urlencode($nim);
+    $siga_data_url = "https://siga-8.syahkty.dev/api/api_get_krs.php?nim=" . urlencode($nim);
 }
 
 // Pastikan token sudah dibuat oleh dashboard sebelumnya
