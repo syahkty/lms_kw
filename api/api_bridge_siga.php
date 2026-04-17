@@ -11,13 +11,13 @@ $nim = $_SESSION['nim'];
 $role = $_SESSION['role'] ?? 'mahasiswa';
 
 // URL API Siga-8
-$siga_auth_url = "http://192.168.1.9/Siga-8%20kw/api_auth.php";
+$siga_auth_url = "https://siga-8.syahkty.dev/api/api_auth.php";
 
 if ($role === 'dosen') {
     // Sesuaikan URL jika API dosenmu butuh parameter, misal: ?nip=...
-    $siga_data_url = "http://192.168.1.9/Siga-8%20kw/api_get_dosen_mk.php"; 
+    $siga_data_url = "https://siga-8.syahkty.dev/api/api_get_dosen_mk.php"; 
 } else {
-    $siga_data_url = "http://192.168.1.9/Siga-8%20kw/api_get_krs.php?nim=" . urlencode($nim);
+    $siga_data_url = "https://siga-8.syahkty.dev/api/api_get_krs.php?nim=" . urlencode($nim);
 }
 
 // 1. FUNGSI UNTUK MENDAPATKAN TOKEN JWT DARI SIGA-8
