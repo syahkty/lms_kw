@@ -1,17 +1,8 @@
 <?php
 session_start();
 
-// Konfigurasi Database
-$host = "localhost";
-$user = "root"; 
-$pass = ""; 
-$db   = "untad_lms";
-
-$conn = new mysqli($host, $user, $pass, $db);
-
-if ($conn->connect_error) {
-    die("Koneksi gagal: " . $conn->connect_error);
-}
+// Panggil file konfigurasi (pastikan path-nya benar)
+require_once '../config.php'; 
 
 $error = "";
 
