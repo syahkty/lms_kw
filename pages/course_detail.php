@@ -239,6 +239,12 @@ if ($role === 'mahasiswa') {
             </div>
         </div>
 
+        <?php if ($role === 'dosen'): ?>
+            <div style="margin-bottom: 20px; text-align: right;">
+                <a href="add_assignment.php?kode_mk=<?= urlencode($kode_mk) ?>" style="padding: 10px 20px; background-color: #28a745; color: white; border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">➕ Buat Tugas Baru</a>
+            </div>
+        <?php endif; ?>
+
         <?php if (!empty($daftar_tugas)): ?>
             <?php foreach ($daftar_tugas as $index => $tugas): ?>
                 <div class="accordion-item">
