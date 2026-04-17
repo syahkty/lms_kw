@@ -101,26 +101,41 @@ if ($result->num_rows > 0) {
     $cpl_list = [];
 }
 
-// Kalkulasi nilai akhir di background (Siap diambil oleh API SIGA-8 nantinya)
+// Kalkulasi nilai akhir di background dan siapkan daftar tugas untuk dinamis
 $rekap_nilai = [];
 $total_nilai_akhir = 0;
 $hasil_konversi = null;
+$daftar_tugas = [];
 
 if ($role === 'mahasiswa') {
-    $grade_sql = "SELECT a.id, a.judul, a.bobot, s.nilai 
+    $grade_sql = "SELECT a.id, a.judul, a.bobot, a.due_date, s.nilai 
                   FROM assignments a 
                   LEFT JOIN submissions s ON a.id = s.assignment_id AND s.nim = ? 
-                  WHERE a.kode_mk = ?";
+                  WHERE a.kode_mk = ? ORDER BY a.due_date ASC";
     $grade_stmt = $conn->prepare($grade_sql);
     $grade_stmt->bind_param("ss", $nim, $kode_mk);
-    $grade_stmt->execute();
-    $grade_result = $grade_stmt->get_result();
+} else {
+    // Dosen: hanya butuh data tugas tanpa perlu join ke submissions satu per satu di sini
+    $grade_sql = "SELECT id, judul, bobot, due_date FROM assignments WHERE kode_mk = ? ORDER BY due_date ASC";
+    $grade_stmt = $conn->prepare($grade_sql);
+    $grade_stmt->bind_param("s", $kode_mk);
+}
 
-    while ($row = $grade_result->fetch_assoc()) {
+$grade_stmt->execute();
+$grade_result = $grade_stmt->get_result();
+
+while ($row = $grade_result->fetch_assoc()) {
+    $daftar_tugas[] = $row;
+    
+    // Hitung background nilai khusus untuk mahasiswa
+    if ($role === 'mahasiswa') {
         $nilai_mentah = $row['nilai'] !== null ? intval($row['nilai']) : 0;
         $nilai_tertimbang = ($nilai_mentah * intval($row['bobot'])) / 100;
         $total_nilai_akhir += $nilai_tertimbang;
     }
+}
+
+if ($role === 'mahasiswa') {
     $hasil_konversi = konversiNilai($total_nilai_akhir);
 }
 ?>
@@ -224,77 +239,34 @@ if ($role === 'mahasiswa') {
             </div>
         </div>
 
-        <div class="accordion-item">
-            <div class="accordion-header">
-                <span class="chevron">❯</span>
-                <span class="accordion-title">Pertemuan 4 - Kuis 1</span>
-            </div>
-            <div class="accordion-content">
-                <div class="icon-text" style="align-items: flex-start;">
-                    <span style="color: #4CAF50; font-size: 20px;">✓</span>
-                    <div>
-                        <a href="assignment.php?id=2" style="text-decoration: none; color: #0d47a1; font-weight: bold;">
-                            Kuis 1 - Pemahaman Dasar
-                        </a><br>
-                        <small style="color: #666;">Bobot: 10%</small>
+        <?php if (!empty($daftar_tugas)): ?>
+            <?php foreach ($daftar_tugas as $index => $tugas): ?>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span class="chevron">❯</span>
+                        <span class="accordion-title">Tugas <?= $index + 1 ?>: <?= htmlspecialchars($tugas['judul'] ?? 'Tugas'); ?></span>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="icon-text" style="align-items: flex-start;">
+                            <span style="color: #e91e63; font-size: 20px;">📄</span>
+                            <div>
+                                <a href="assignment.php?id=<?= $tugas['id']; ?>" style="text-decoration: none; color: #0d47a1; font-weight: bold;">
+                                    Buka Detail Tugas
+                                </a><br>
+                                <small style="color: #666;">Bobot: <?= htmlspecialchars($tugas['bobot'] ?? '0'); ?>% | Tenggat: <?= isset($tugas['due_date']) ? date("d M Y H:i", strtotime($tugas['due_date'])) : '-'; ?></small>
+                                <?php if ($role === 'mahasiswa'): ?>
+                                    <br><small style="color: <?= isset($tugas['nilai']) && $tugas['nilai'] !== null ? '#4CAF50' : '#f44336'; ?>; font-weight: bold; margin-top: 5px; display: inline-block;">
+                                        Nilai Kamu: <?= isset($tugas['nilai']) && $tugas['nilai'] !== null ? htmlspecialchars($tugas['nilai']) . '/100' : 'Belum dinilai/mengumpul'; ?>
+                                    </small>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div class="accordion-item">
-            <div class="accordion-header">
-                <span class="chevron">❯</span>
-                <span class="accordion-title">Pertemuan 5 - Perencanaan Proyek Sistem Informasi</span>
-            </div>
-            <div class="accordion-content">
-                <div class="icon-text" style="align-items: flex-start;">
-                    <span style="color: #e91e63; font-size: 20px;">📄</span>
-                    <div>
-                        <a href="assignment.php?id=1" style="text-decoration: none; color: #0d47a1; font-weight: bold;">
-                            Tugas Laporan Perencanaan Proyek Sistem Informasi
-                        </a><br>
-                        <small style="color: #666;">Bobot: 20%</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="accordion-item">
-            <div class="accordion-header">
-                <span class="chevron">❯</span>
-                <span class="accordion-title">Pertemuan 8 - UTS (Ujian Tengah Semester)</span>
-            </div>
-            <div class="accordion-content">
-                <div class="icon-text" style="align-items: flex-start;">
-                    <span style="color: #ff9800; font-size: 20px;">📝</span>
-                    <div>
-                        <a href="assignment.php?id=3" style="text-decoration: none; color: #0d47a1; font-weight: bold;">
-                            Lembar Jawaban UTS
-                        </a><br>
-                        <small style="color: #666;">Bobot: 30%</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="accordion-item">
-            <div class="accordion-header">
-                <span class="chevron">❯</span>
-                <span class="accordion-title">Pertemuan 16 - UAS (Ujian Akhir Semester)</span>
-            </div>
-            <div class="accordion-content">
-                <div class="icon-text" style="align-items: flex-start;">
-                    <span style="color: #f44336; font-size: 20px;">🎓</span>
-                    <div>
-                        <a href="assignment.php?id=4" style="text-decoration: none; color: #0d47a1; font-weight: bold;">
-                            Pengumpulan Final Project (UAS)
-                        </a><br>
-                        <small style="color: #666;">Bobot: 40%</small>
-                    </div>
-                </div>
-            </div>
-        </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p style="text-align: center; color: #666; margin-top: 20px; font-style: italic;">Belum ada tugas untuk mata kuliah ini.</p>
+        <?php endif; ?>
 
     </div>
 
