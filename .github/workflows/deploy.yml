@@ -1,0 +1,21 @@
+name: Deploy LMS ke Oracle VPS
+
+on:
+  push:
+    branches:
+      - main # Script ini jalan otomatis saat kamu push ke branch main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Eksekusi Git Pull di VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /var/www/lms_kw
+            git pull origin main

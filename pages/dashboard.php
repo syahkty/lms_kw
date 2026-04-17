@@ -204,7 +204,7 @@ if (count($kata) >= 2) {
 </header>
 
     <div class="container">
-        <h1>My courses</h1>
+        <h1>My courses Tes</h1>
         <div class="course-overview">
             <h4>Course overview</h4>
             <div class="filters">
