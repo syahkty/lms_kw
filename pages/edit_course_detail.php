@@ -10,10 +10,7 @@ if (!isset($_SESSION['nim']) || !isset($_SESSION['role']) || $_SESSION['role'] !
     exit();
 }
 
-$conn = new mysqli("localhost", "root", "", "untad_lms");
-if ($conn->connect_error) {
-    die("Koneksi gagal: " . $conn->connect_error);
-}
+require_once '../config.php';
 
 // Gunakan string untuk kode_mk, bukan intval()
 $kode_mk = isset($_GET['id']) ? $_GET['id'] : '';

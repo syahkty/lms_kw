@@ -86,8 +86,7 @@ if (isset($_SESSION['siga_token'])) {
 // ==========================================
 // 2. AMBIL DESKRIPSI LOKAL & KALKULASI NILAI
 // ==========================================
-$conn = new mysqli("localhost", "root", "", "untad_lms");
-if ($conn->connect_error) { die("Koneksi error: " . $conn->connect_error); }
+require_once '../config.php';
 
 $stmt = $conn->prepare("SELECT * FROM course_details WHERE kode_mk = ?");
 $stmt->bind_param("s", $kode_mk);

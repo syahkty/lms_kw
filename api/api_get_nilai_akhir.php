@@ -80,14 +80,8 @@ if (empty($nim) || empty($kode_mk)) {
 }
 
 // 2. Koneksi ke Database LMS
-$conn = new mysqli("localhost", "root", "", "untad_lms");
-if ($conn->connect_error) {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Koneksi database gagal: " . $conn->connect_error
-    ]);
-    exit();
-}
+$target_config = file_exists('../config.php') ? '../config.php' : 'config.php';
+require_once $target_config;
 
 // 3. Kalkulasi Nilai
 $total_nilai_akhir = 0;

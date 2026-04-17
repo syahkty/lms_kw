@@ -2,7 +2,7 @@
 session_start();
 if (!isset($_SESSION['nim'])) { header("Location: ../auth/login.php"); exit(); }
 
-$conn = new mysqli("localhost", "root", "", "untad_lms");
+require_once '../config.php';
 $assignment_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $user_id = $_SESSION['nim'];
 $role = $_SESSION['role'] ?? 'mahasiswa';
