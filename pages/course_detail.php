@@ -9,6 +9,16 @@ $kode_mk = isset($_GET['id']) ? $_GET['id'] : '';
 $nim = $_SESSION['nim'];
 $role = $_SESSION['role'] ?? 'mahasiswa';
 
+// Logika untuk membuat inisial (Contoh: "Andi Syahkty" menjadi "AS")
+$nama_lengkap = $_SESSION['nama'] ?? 'User Name';
+$kata = explode(" ", $nama_lengkap);
+$inisial = "";
+if (count($kata) >= 2) {
+    $inisial = strtoupper(substr($kata[0], 0, 1) . substr($kata[1], 0, 1));
+} elseif (count($kata) == 1) {
+    $inisial = strtoupper(substr($kata[0], 0, 2));
+}
+
 if(empty($kode_mk)){
     die("Kode Mata Kuliah tidak valid.");
 }
@@ -147,12 +157,111 @@ if ($role === 'mahasiswa') {
     <title><?= htmlspecialchars($nama_mk); ?></title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f5f7; margin: 0; }
-        header { background: white; padding: 10px 20px; display: flex; align-items: center; border-bottom: 1px solid #ddd; }
+        header {
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
         header img { width: 40px; margin-right: 20px; }
-        nav a { margin-right: 20px; text-decoration: none; color: #333; font-size: 14px; }
+        nav a {
+            margin-right: 20px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+        }
         nav a.active { font-weight: bold; }
-        .user-menu { margin-left: auto; display: flex; align-items: center; gap: 15px;}
-        .avatar { background: #eee; border-radius: 50%; padding: 8px 12px; font-weight: bold; color: #555; }
+        
+        .user-menu { 
+            margin-left: auto; 
+            display: flex; 
+            align-items: center; 
+            gap: 20px;
+        }
+
+        .icon-wrapper {
+            position: relative;
+            cursor: pointer;
+            color: #555;
+            font-size: 18px; /* Ukuran icon */
+        }
+
+        .icon-wrapper:hover { color: #0d47a1; }
+
+        .badge {
+            position: absolute;
+            top: -6px;
+            right: -8px;
+            background-color: #e53935; /* Merah notifikasi */
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 5px;
+            border-radius: 10px;
+        }
+
+        /* Styling Avatar & Dropdown */
+        .user-dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .avatar-wrapper:hover { background-color: #f0f0f0; }
+
+        .avatar { 
+            background: #e9ecef; 
+            border-radius: 50%; 
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold; 
+            color: #495057; 
+            font-size: 14px;
+        }
+
+        /* Menu Dropdown yang disembunyikan */
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 50px;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        /* Class untuk memunculkan dropdown via JS */
+        .dropdown-menu.show { display: block; }
+
+        .dropdown-menu a {
+            color: #333;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+
+        .dropdown-menu a i { margin-right: 10px; color: #666; width: 16px; text-align: center;}
+        .dropdown-menu a:hover { background-color: #f8f9fa; color: #0d47a1; }
+        .dropdown-menu a:hover i { color: #0d47a1; }
         
         .sub-nav { background-color: #0d47a1; padding: 0 40px; display: flex; gap: 20px; }
         .sub-nav a { color: white; text-decoration: none; padding: 12px 5px; font-size: 14px; }
@@ -178,19 +287,39 @@ if ($role === 'mahasiswa') {
         th { background-color: #f8f9fa; }
         .btn-edit { background: #0d47a1; color: white; padding: 5px 10px; text-decoration: none; border-radius: 4px; font-size: 12px; float: right; }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
     <header>
         <img src="../assets/img/logo-untad.png" alt="Logo">
         <nav>
-            <a href="">Home</a>
+            <a href="#">Home</a>
             <a href="dashboard.php">Dashboard</a>
             <a href="dashboard.php" class="active">My courses</a>
         </nav>
+        
         <div class="user-menu">
-            <span>🔔</span> <span>💬</span>
-            <div class="avatar">AS</div>
+            <div class="icon-wrapper">
+                <i class="far fa-bell"></i>
+                <span class="badge">12</span> </div>
+            
+            <div class="icon-wrapper">
+                <i class="far fa-comment"></i>
+            </div>
+
+            <div class="user-dropdown-container">
+                <div class="avatar-wrapper" onclick="toggleDropdown(event)">
+                    <div class="avatar"><?= $inisial; ?></div>
+                    <i class="fas fa-chevron-down" style="font-size: 12px; color: #888;"></i>
+                </div>
+                
+                <div class="dropdown-menu" id="userDropdown">
+                    <a href="#"><i class="far fa-user"></i> Profile</a>
+                    <a href="#"><i class="fas fa-cog"></i> Preferences</a>
+                    <a href="../auth/logout.php"><i class="fas fa-sign-out-alt"></i> Log out</a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -302,6 +431,25 @@ if ($role === 'mahasiswa') {
                 }
             });
         });
+
+        // Fungsi memunculkan dropdown
+        function toggleDropdown(event) {
+            document.getElementById("userDropdown").classList.toggle("show");
+            event.stopPropagation(); // Mencegah event klik menyebar ke window
+        }
+
+        // Menutup dropdown jika user klik di luar area avatar
+        window.onclick = function(event) {
+            if (!event.target.matches('.avatar-wrapper') && !event.target.closest('.avatar-wrapper')) {
+                var dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
     </script>
 </body>
 </html>
